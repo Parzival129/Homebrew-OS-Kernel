@@ -50,11 +50,11 @@ $(ARCHDIR)/crtn.o \
 .PHONY: all clean install install-headers install-kernel
 .SUFFIXES: .o .c .S
 
-all: SaruKernel.kernel
+all: nue_kernel.kernel
 
-SaruKernel.kernel: $(OBJS) $(ARCHDIR)/linker.ld
+nue_kernel.kernel: $(OBJS) $(ARCHDIR)/linker.ld
 	$(CC) -T $(ARCHDIR)/linker.ld -o $@ $(CFLAGS) $(LINK_LIST)
-	grub-file --is-x86-multiboot SaruKernel.kernel
+	grub-file --is-x86-multiboot nue_kernel.kernel
 
 $(ARCHDIR)/crtbegin.o $(ARCHDIR)/crtend.o:
 	OBJ=`$(CC) $(CFLAGS) $(LDFLAGS) -print-file-name=$(@F)` && cp "$$OBJ" $@
@@ -66,7 +66,7 @@ $(ARCHDIR)/crtbegin.o $(ARCHDIR)/crtend.o:
 	$(CC) -MD -c $< -o $@ $(CFLAGS) $(CPPFLAGS)
 
 clean:
-	rm -f SaruKernel.kernel
+	rm -f nue_kernel.kernel
 	rm -f $(OBJS) *.o */*.o */*/*.o
 	rm -f $(OBJS:.o=.d) *.d */*.d */*/*.d
 
@@ -76,8 +76,8 @@ install-headers:
 	mkdir -p $(DESTDIR)$(INCLUDEDIR)
 	cp -R --preserve=timestamps include/. $(DESTDIR)$(INCLUDEDIR)/.
 
-install-kernel: SaruKernel.kernel
+install-kernel: nue_kernel.kernel
 	mkdir -p $(DESTDIR)$(BOOTDIR)
-	cp SaruKernel.kernel $(DESTDIR)$(BOOTDIR)
+	cp nue_kernel.kernel $(DESTDIR)$(BOOTDIR)
 
 -include $(OBJS:.o=.d)

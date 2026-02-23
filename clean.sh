@@ -8,4 +8,4 @@ done
 
 rm -rf sysroot
 rm -rf isodir
-rm -rf SaruKernel.iso
+rm -rf nue_kernel.iso
