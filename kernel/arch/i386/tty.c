@@ -62,9 +62,11 @@ void terminal_putchar(char c) {
 	terminal_putentryat(uc, terminal_color, terminal_column, terminal_row);
 	if (++terminal_column == VGA_WIDTH) {
 		terminal_column = 0;
-		if (++terminal_row == VGA_HEIGHT)
+		if (++terminal_row == VGA_HEIGHT) {
 			scrollup();
 			terminal_row = VGA_HEIGHT - 1;
+	
+		}
 	}
 
 	// Scroll up if we reach the end of the screen
