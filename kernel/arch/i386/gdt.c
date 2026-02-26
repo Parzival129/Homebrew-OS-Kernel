@@ -19,7 +19,7 @@ void gdt_set_gate(int num, uint32_t base, uint32_t limit, uint8_t access, uint8_
     gdt[num].access      = access;
 }
 
-void gdt_install() {
+void gdt_install() { // sets up the gdt table and flushes it to the CPU
     gp.limit = (sizeof(struct gdt_entry) * 5) - 1;
     gp.base  = (uint32_t)&gdt;
 
