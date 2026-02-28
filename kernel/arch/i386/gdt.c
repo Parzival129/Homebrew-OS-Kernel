@@ -32,5 +32,5 @@ void gdt_install() { // sets up the gdt table and flushes it to the CPU
     // 0x20: User Data Segment (Access: 0xF2, Granularity: 0xCF)
     gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF);
 
-    gdt_init((uint32_t)&gp); // pass the pointer to the gdt table so gdt_flush can load it properly
+    gdt_init((uint32_t)&gp); // pass the pointer to the gdt table so gdt_init can load it properly
 }

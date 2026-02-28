@@ -1,6 +1,6 @@
 .section .text
 .global gdt_init
-gdt_flush:
+gdt_init:
     mov 4(%esp), %eax    # Get the pointer to the GDTR from the stack
     lgdt (%eax)          # Load the new GDT pointer
 
