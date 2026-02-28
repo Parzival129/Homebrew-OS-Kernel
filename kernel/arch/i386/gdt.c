@@ -1,22 +1,20 @@
 #include <kernel/gdt.h>
 
-struct gdt_entry gdt[5];
-struct gdt_ptr gp;
+struct gdt_entry gdt[5]; // Initialize the list of gdt entries
+struct gdt_ptr gp; // Initialize the 'entry point' of the gdt
 
-// This is the "reloadSegments" equivalent from the tutorial
-// We define it in assembly later.
-extern void gdt_flush(uint32_t);
+extern void gdt_init(uint32_t);
 
-void gdt_set_gate(int num, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran) {
-    gdt[num].base_low    = (base & 0xFFFF);
-    gdt[num].base_middle = (base >> 16) & 0xFF;
-    gdt[num].base_high   = (base >> 24) & 0xFF;
+void gdt_set_gate(int index, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran) {
+    gdt[index].base_low    = (base & 0xFFFF);
+    gdt[index].base_middle = (base >> 16) & 0xFF;
+    gdt[index].base_high   = (base >> 24) & 0xFF;
 
-    gdt[num].limit_low   = (limit & 0xFFFF);
-    gdt[num].granularity = (limit >> 16) & 0x0F;
+    gdt[index].limit_low   = (limit & 0xFFFF);
+    gdt[index].granularity = (limit >> 16) & 0x0F;
 
-    gdt[num].granularity |= gran & 0xF0;
-    gdt[num].access      = access;
+    gdt[index].granularity |= gran & 0xF0;
+    gdt[index].access      = access;
 }
 
 void gdt_install() { // sets up the gdt table and flushes it to the CPU
@@ -34,5 +32,5 @@ void gdt_install() { // sets up the gdt table and flushes it to the CPU
     // 0x20: User Data Segment (Access: 0xF2, Granularity: 0xCF)
     gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF);
 
-    gdt_flush((uint32_t)&gp);
+    gdt_init((uint32_t)&gp); // pass the pointer to the gdt table so gdt_flush can load it properly
 }

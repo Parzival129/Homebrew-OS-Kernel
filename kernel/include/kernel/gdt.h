@@ -1,4 +1,4 @@
-#ifndef _KERNEL_GDT_H
+#ifndef _KERNEL_GDT_H // Prevents the compiler from including gdt.h multiple times when referenced by multiple files
 #define _KERNEL_GDT_H
 
 #include <stdint.h>
