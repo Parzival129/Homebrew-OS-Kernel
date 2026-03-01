@@ -61,11 +61,15 @@ extern void irq13(void);  // IRQ13 - Coprocessor
 extern void irq14(void);  // IRQ14 - ATA Primary
 extern void irq15(void);  // IRQ15 - ATA Secondary
 
+// Functions for direct hardware communication:
+
+// writes one byte of data to a specific hardware I/O port
 static inline void outb(uint16_t port, uint8_t value)
 {
     __asm__ volatile ("outb %0, %1" : : "a"(value), "Nd"(port));
 }
 
+// read one byte of data from a specific hardware I/O port 
 static inline uint8_t inb(uint16_t port)
 {
     uint8_t value;
@@ -73,13 +77,16 @@ static inline uint8_t inb(uint16_t port)
     return value;
 }
 
+// Creates a tiny delay to allow hardware to react to a previous I/O command
 static inline void io_wait(void)
 {
-    outb(0x80, 0);
+    outb(0x80, 0); // fake write that takes about 1 microsecond
 }
 
 
-// Talks to the PIC via I/O using the outb instruction to offset the master and slave index so they don't intefere with the CPU exception indexs
+// Remaps the PIC to move hardware interrupts from their conflicting default range (0x08–0x0F) to a safe range (usually 0x20+)
+// prevents hardware IRQs from being misinterpreted by the CPU as internal exceptions or faults, normally not a problem in real mode but will interfere in protected mode (how the kernel runs)
+
 // this function and its helpers were implemented with the help of copilot to get user input up and running
 static void pic_remap(uint8_t master_offset, uint8_t slave_offset)
 {
@@ -110,6 +117,7 @@ static void pic_remap(uint8_t master_offset, uint8_t slave_offset)
     outb(0xA1, slave_mask);
 }
 
+// Tells the pic 'end of interrupt' and that it can accept more for the same hardware
 static void pic_send_eoi(uint8_t irq)
 {
     if (irq >= 8) {
@@ -118,9 +126,10 @@ static void pic_send_eoi(uint8_t irq)
     outb(0x20, 0x20);
 }
 
-void isr_handler(struct interrupt_frame *frame)
+void isr_handler(struct interrupt_frame *frame) // handles the interrupt service routines passed back from the stubs
+// Uses two-stage assembly wrapping method (stubs defined in assembly file and handler function in C)
 {
-    if (frame->int_no < 32) {
+    if (frame->int_no < 32) { // the interrupt is for a execption
         // maps each isr to a exception message, matches idt defined below
         static const char *exception_messages[32] = {
             "Division By Zero",
@@ -167,7 +176,7 @@ void isr_handler(struct interrupt_frame *frame)
         }
     }
 
-    if (frame->int_no >= 32 && frame->int_no <= 47) {
+    if (frame->int_no >= 32 && frame->int_no <= 47) { // the interrupt is from hardware (interrupt request (IRQ))
         uint8_t irq = (uint8_t)(frame->int_no - 32);
 
         if (irq == 1) {
@@ -229,7 +238,7 @@ void idt_install()
     idt_set_entry(30, (uint32_t)isr30, 0x08, 0x8E); // Security Exception
     idt_set_entry(31, (uint32_t)isr31, 0x08, 0x8E); // Reserved Exception
 
-    // Set up IRQ handlers (for hardware) (mapped to IDT 32-47 after PIC remapping)
+    // Set up IRQ (Interrupt request) handlers (for hardware) (mapped to IDT 32-47 after PIC remapping)
     idt_set_entry(32, (uint32_t)irq0, 0x08, 0x8E);  // IRQ0 - Timer
     idt_set_entry(33, (uint32_t)irq1, 0x08, 0x8E);  // IRQ1 - Keyboard
     idt_set_entry(34, (uint32_t)irq2, 0x08, 0x8E);  // IRQ2 - Cascade

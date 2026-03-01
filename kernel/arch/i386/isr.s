@@ -1,13 +1,13 @@
 .section .text
 
-# Define ISR handler stubs for CPU exceptions (0-31)
+# Define ISR (Interrupt service routine) handler stubs for CPU exceptions (0-31)
 # These stubs are called by the IDT when an exception occurs
 
 # Exception handlers (no error code)
 .macro ISR_NOERRCODE num
 .global isr\num
 isr\num:
-    cli
+    cli              # Clear interrupt flag to prevent nested interrupts
     push $0          # Push a dummy error code
     push $\num       # Push the interrupt number
     jmp isr_common_handler
@@ -22,7 +22,7 @@ isr\num:
     jmp isr_common_handler
 .endm
 
-# IRQ handlers
+# IRQ (interrupt request) handlers, comes from hardware devices
 .macro IRQ_HANDLER num offset
 .global irq\num
 irq\num:
