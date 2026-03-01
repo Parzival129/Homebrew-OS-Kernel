@@ -78,6 +78,9 @@ static inline void io_wait(void)
     outb(0x80, 0);
 }
 
+
+// Talks to the PIC via I/O using the outb instruction to offset the master and slave index so they don't intefere with the CPU exception indexs
+// this function and its helpers were implemented with the help of copilot to get user input up and running
 static void pic_remap(uint8_t master_offset, uint8_t slave_offset)
 {
     uint8_t master_mask = inb(0x21);
@@ -160,7 +163,7 @@ void isr_handler(struct interrupt_frame *frame)
                frame->err_code);
 
         for (;;) {
-            __asm__ volatile ("cli; hlt");
+            __asm__ volatile ("cli; hlt"); // halts everything since exceptions are unrecoverable at this stage
         }
     }
 
@@ -172,7 +175,7 @@ void isr_handler(struct interrupt_frame *frame)
             printf("[IRQ] Keyboard interrupt (scancode=0x%x)\n", scancode);
         }
 
-        pic_send_eoi(irq);
+        pic_send_eoi(irq); // tells the pic 'end of interrupt', that the interrupt has completed and that it can accept more interrupts from the same hardware
     }
 }
 
@@ -192,7 +195,7 @@ void idt_install()
 
     // Set up CPU exceptions (0-31)
     // Includes index of IDT entry, address of interrupt handler code, the segment selector, and attributes
-    // Reference 0x08 kernel code segment that was defined in the GDT
+    // Reference 0x08 kernel code segment that was defined in the GDT -> knows what code segment to run the handler in
     idt_set_entry(0, (uint32_t)isr0, 0x08, 0x8E);   // Division by Zero Exception
     idt_set_entry(1, (uint32_t)isr1, 0x08, 0x8E);   // Debug Exception
     idt_set_entry(2, (uint32_t)isr2, 0x08, 0x8E);   // NMI Exception
@@ -244,12 +247,13 @@ void idt_install()
     idt_set_entry(46, (uint32_t)irq14, 0x08, 0x8E); // IRQ14 - ATA Primary
     idt_set_entry(47, (uint32_t)irq15, 0x08, 0x8E); // IRQ15 - ATA Secondary
 
+    // 8259 PIC is the chip between hardware and the CPU, (signal from hardare -> pic -> interrupt index -> cpu)
     pic_remap(0x20, 0x28); // remaps IRQ to correct IRQ handler within the idt
-    outb(0x21, 0xFC);
-    outb(0xA1, 0xFF);
+    outb(0x21, 0xFC); // masks everything on master except the timer and the keyboard
+    outb(0xA1, 0xFF); // masks everything on slave
 
     idt_init((uint32_t)&ip);
 
     // Enable hardware interrupts after IDT + PIC are initialized.
-    __asm__ volatile ("sti");
+    __asm__ volatile ("sti"); // CPU will now respond to interrupts, previously they were ignored before setup was complete
 }

@@ -86,7 +86,7 @@ IRQ_HANDLER 15  47  # ATA Secondary (IRQ15)
 
 # Common handler called by all ISR/IRQ stubs
 .global isr_common_handler
-isr_common_handler:
+isr_common_handler: # Pushes additional data to stack so that it is consistent with the interrupt_frame structure expected by isr_handler in C
     # Save all general-purpose registers
     pusha                    # Push EAX, ECX, EDX, EBX, original ESP, EBP, ESI, EDI
     mov %ds, %ax
@@ -117,7 +117,7 @@ isr_common_handler:
     # [ESP + 52] = EFLAGS
 
     push %esp                # Push pointer to registers struct
-    call isr_handler         # Call high-level handler (not yet defined)
+    call isr_handler         # Call high-level handler, the stack is not set up correctly for the function to interpret the data
     add $4, %esp             # Clean up
 
     # Restore all registers
