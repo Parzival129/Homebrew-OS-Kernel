@@ -1,0 +1,11 @@
+Common kernel vocabulary:
+
+kernel - core program of OS that bridges hardware with applications, holds complete control over system
+GDT - global descriptor table
+IDT - interrupt service table
+PIC - programmable interrupt controller
+ISR - interrupt service routine
+IRQ - interrupt service request
+interrupt - tells the cpu to stop what its doing and do something else
+TTY - teletypewriter, enables typing
+i386 - 32 bit intel 80386 microprocessor architecture
