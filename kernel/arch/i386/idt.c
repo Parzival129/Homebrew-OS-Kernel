@@ -32,7 +32,7 @@ extern void isr18(void);  // Machine Check
 extern void isr19(void);  // SIMD Floating-Point Exception
 extern void isr20(void);  // Virtualization Exception
 extern void isr21(void);  // Control Protection Exception
-extern void isr22(void);  // Reserved
+extern void isr22(void);  // Reserved by CPU
 extern void isr23(void);  // Reserved
 extern void isr24(void);  // Reserved
 extern void isr25(void);  // Reserved
@@ -183,6 +183,10 @@ void isr_handler(struct interrupt_frame *frame) // handles the interrupt service
             uint8_t scancode = inb(0x60);
             printf("[IRQ] Keyboard interrupt (scancode=0x%x)\n", scancode);
         }
+
+        // if (irq == 0) { // Makes sure the timer (IRQ0) is running, also confirms EOI is being sent so ticks are registered continously
+        //     printf("[IRQ] Timer tick\n");
+        // }
 
         pic_send_eoi(irq); // tells the pic 'end of interrupt', that the interrupt has completed and that it can accept more interrupts from the same hardware
     }

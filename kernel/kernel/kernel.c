@@ -11,6 +11,9 @@ void kernel_main(void) {
 	printf("READY\n\n");
 	printf("Hello, kernel World!\n");
 
+	// Tests the IDT exception handler with a division by 0 exception
+	// __asm__ volatile ("movl $1, %%eax; xorl %%edx, %%edx; movl $0, %%ecx; divl %%ecx" ::: "eax", "ecx", "edx");
+	
 	for (;;) { // halts the program so it can observe IRQ interrupts for keyboard testing
 		__asm__ volatile ("hlt");
 	}
