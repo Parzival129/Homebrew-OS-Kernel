@@ -61,6 +61,59 @@ int printf(const char* restrict format, ...) {
 			if (!print(str, len))
 				return -1;
 			written += len;
+
+		// include functionality for hexademical, specifically for IRQ handler logging
+		// for *format u and x
+		} else if (*format == 'u') {
+			format++;
+			unsigned int n = va_arg(parameters, unsigned int);
+			char buf[12];
+			int i = 0;
+			if (n == 0) {
+				buf[i++] = '0';
+			} else {
+				char tmp[12];
+				int j = 0;
+				while (n > 0) {
+					tmp[j++] = '0' + (n % 10);
+					n /= 10;
+				}
+				while (j > 0) {
+					buf[i++] = tmp[--j];
+				}
+			}
+			if (maxrem < (size_t)i) {
+				return -1;
+			}
+			if (!print(buf, i))
+				return -1;
+			written += i;
+		} else if (*format == 'x') {
+			format++;
+			unsigned int n = va_arg(parameters, unsigned int);
+			char buf[9];
+			int i = 0;
+			if (n == 0) {
+				buf[i++] = '0';
+			} else {
+				char tmp[9];
+				int j = 0;
+				while (n > 0) {
+					int digit = n % 16;
+					tmp[j++] = (digit < 10) ? ('0' + digit) : ('a' + digit - 10);
+					n /= 16;
+				}
+				while (j > 0) {
+					buf[i++] = tmp[--j];
+				}
+			}
+			if (maxrem < (size_t)i) {
+				return -1;
+			}
+			if (!print(buf, i))
+				return -1;
+			written += i;
+
 		} else {
 			format = format_begun_at;
 			size_t len = strlen(format);
