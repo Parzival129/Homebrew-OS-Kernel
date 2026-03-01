@@ -19,5 +19,5 @@ void idt_install() {
 
     // idt_set_entry here for all entries
 
-    load_idt((uint32_t)&ip);
+    idt_init((uint32_t)&ip);
 }

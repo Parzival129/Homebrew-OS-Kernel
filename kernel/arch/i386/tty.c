@@ -19,7 +19,7 @@ static uint16_t* terminal_buffer;
 // Additional helper functionality (scrolling)
 
 void scrollup(void) {
-	for (size_t y = 0; y < VGA_HEIGHT; y++) {
+	for (size_t y = 1; y < VGA_HEIGHT; y++) {
 		for (size_t x = 0; x < VGA_WIDTH; x++) {
 			const size_t index = y * VGA_WIDTH + x;
 			terminal_buffer[index - VGA_WIDTH] = terminal_buffer[index];
