@@ -1,5 +1,4 @@
 #include <kernel/idt.h>
-#include <kernel/tty.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -180,14 +179,14 @@ void isr_handler(struct interrupt_frame *frame) // handles the interrupt service
     if (frame->int_no >= 32 && frame->int_no <= 47) { // the interrupt is from hardware (interrupt request (IRQ))
         uint8_t irq = (uint8_t)(frame->int_no - 32);
 
-        if (irq == 1) {
+        if (irq == 1) { // if it is keyboard input
             uint8_t scancode = inb(0x60);
-            //printf("[IRQ] Keyboard interrupt (scancode=0x%x)\n", scancode);
-            char c = ps2_to_ascii(scancode);
+
+            char c = ps2_to_ascii(scancode); // convert the ps2 scancode to ascii character
             if (c != 0) {
-                putchar('\b');
-                putchar(c);
-                printf("_", terminal_get_row(), terminal_get_column());
+                putchar('\b'); // artificial backspace to remove the previous cursor
+                putchar(c); // write the ascii character to the screen
+                printf("_"); // write a new cursor
             }
         }
 

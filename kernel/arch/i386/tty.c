@@ -35,7 +35,7 @@ const char ascii_shift_map[] = {
     '|', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', 0, '*', 0, ' '
 };
 
-// scancode to ascii
+// convert ps2 scancodes to decimal ascii using defined ascii maps
 
 char ps2_to_ascii(uint8_t scancode) {
     // Check for Break codes (Key Released)
