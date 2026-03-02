@@ -12,6 +12,7 @@ extern "C" {
 int printf(const char* __restrict, ...);
 int putchar(int);
 int puts(const char*);
+char ps2_to_ascii(int);
 
 #ifdef __cplusplus
 }

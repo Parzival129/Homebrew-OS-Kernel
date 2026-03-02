@@ -8,8 +8,8 @@ void kernel_main(void) {
 	terminal_initialize(); printf("[OK] terminal initialized\n");
 	gdt_install(); printf("[OK] gdt installed\n");
 	idt_install(); printf("[OK] idt installed\n");
-	printf("READY\n\n");
-	printf("Hello, kernel World!\n");
+	printf("nue kernel booted\n");
+	printf("READY\n\n>");
 
 	// Tests the IDT exception handler with a division by 0 exception
 	// __asm__ volatile ("movl $1, %%eax; xorl %%edx, %%edx; movl $0, %%ecx; divl %%ecx" ::: "eax", "ecx", "edx");

@@ -1,4 +1,5 @@
 #include <kernel/idt.h>
+#include <kernel/tty.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -181,7 +182,13 @@ void isr_handler(struct interrupt_frame *frame) // handles the interrupt service
 
         if (irq == 1) {
             uint8_t scancode = inb(0x60);
-            printf("[IRQ] Keyboard interrupt (scancode=0x%x)\n", scancode);
+            //printf("[IRQ] Keyboard interrupt (scancode=0x%x)\n", scancode);
+            char c = ps2_to_ascii(scancode);
+            if (c != 0) {
+                putchar('\b');
+                putchar(c);
+                printf("_", terminal_get_row(), terminal_get_column());
+            }
         }
 
         // if (irq == 0) { // Makes sure the timer (IRQ0) is running, also confirms EOI is being sent so ticks are registered continously

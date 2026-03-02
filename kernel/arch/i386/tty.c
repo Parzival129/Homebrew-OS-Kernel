@@ -16,6 +16,53 @@ static size_t terminal_column;
 static uint8_t terminal_color;
 static uint16_t* terminal_buffer;
 
+static bool shift_pressed = false;
+
+// IMPLEMENT PS/2 scancode to ASCII conversion table
+
+// Scan Code Set 1: Typical US QWERTY Mapping
+const char ascii_map[] = {
+    0,  27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b',
+    '\t', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n',
+    0, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`', 0,
+    '\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 0, '*', 0, ' '
+};
+
+const char ascii_shift_map[] = {
+    0,  27, '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '\b',
+    '\t', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n',
+    0, 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '\"', '~', 0,
+    '|', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', 0, '*', 0, ' '
+};
+
+// scancode to ascii
+
+char ps2_to_ascii(uint8_t scancode) {
+    // Check for Break codes (Key Released)
+    if (scancode & 0x80) {
+        uint8_t released = scancode & 0x7F;
+        if (released == 0x2A || released == 0x36) {
+            shift_pressed = false;
+        }
+        return 0; // Don't print anything on release
+    }
+
+    // Check for Make codes (Key Pressed)
+    switch (scancode) {
+        case 0x2A: // Left Shift
+        case 0x36: // Right Shift
+            shift_pressed = true;
+            return 0;
+        
+        default:
+            // Ensure scancode is within our table range
+            if (scancode < sizeof(ascii_map)) {
+                return shift_pressed ? ascii_shift_map[scancode] : ascii_map[scancode];
+            }
+            return 0;
+    }
+}
+
 // Additional helper functionality (scrolling)
 
 void scrollup(void) {
@@ -52,29 +99,51 @@ void terminal_putentryat(unsigned char c, uint8_t color, size_t x, size_t y) {
 	terminal_buffer[index] = vga_entry(c, color);
 }
 
+
 void terminal_putchar(char c) {
 	unsigned char uc = c;
 
-	if (uc != '\n') {
-		terminal_putentryat(uc, terminal_color, terminal_column, terminal_row);
-	}
-
-	if (++terminal_column == VGA_WIDTH) {
-		terminal_column = 0;
-		if (++terminal_row == VGA_HEIGHT) {
-			scrollup();
-			terminal_row = VGA_HEIGHT - 1;
-	
+	if (c == '\b') {
+		// Backspace: move cursor back and erase
+		if (terminal_column > 0) {
+			terminal_column--;
+		} else if (terminal_row > 0) {
+			// Wrap to end of previous line
+			terminal_row--;
+			terminal_column = VGA_WIDTH - 1;
 		}
+		// Erase the character at the new cursor position
+		terminal_putentryat(' ', terminal_color, terminal_column, terminal_row);
 	}
-
-	// Scroll up if we reach the end of the screen
 	else if (c == '\n') {
+		// Newline: move to next line
+		terminal_column = 0;
 		if (++terminal_row == VGA_HEIGHT) {
 			scrollup();
 			terminal_row = VGA_HEIGHT - 1;
 		}
-		terminal_column = 0;
+	}
+	else if (c == '\t') {
+		// Tab: advance to next multiple of 8
+		terminal_column += 8 - (terminal_column % 8);
+		if (terminal_column >= VGA_WIDTH) {
+			terminal_column = 0;
+			if (++terminal_row == VGA_HEIGHT) {
+				scrollup();
+				terminal_row = VGA_HEIGHT - 1;
+			}
+		}
+	}
+	else {
+		// Regular character: print and advance cursor
+		terminal_putentryat(uc, terminal_color, terminal_column, terminal_row);
+		if (++terminal_column == VGA_WIDTH) {
+			terminal_column = 0;
+			if (++terminal_row == VGA_HEIGHT) {
+				scrollup();
+				terminal_row = VGA_HEIGHT - 1;
+			}
+		}
 	}
 }
 
@@ -85,4 +154,12 @@ void terminal_write(const char* data, size_t size) {
 
 void terminal_writestring(const char* data) {
 	terminal_write(data, strlen(data));
+}
+
+size_t terminal_get_row(void) {
+	return terminal_row;
+}
+
+size_t terminal_get_column(void) {
+	return terminal_column;
 }
