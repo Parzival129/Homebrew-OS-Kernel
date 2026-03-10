@@ -62,6 +62,14 @@ int printf(const char* restrict format, ...) {
 				return -1;
 			written += len;
 
+		// } else if (*format == 'd') {
+		// 	format++;
+		// 	int n = va_arg(parameters, int);
+		// 	char buf[12];
+		// 	if (n < 0) {
+				
+		// 	}
+
 		// include functionality for hexademical, specifically for IRQ handler logging
 		// for *format u and x
 		} else if (*format == 'u') {
