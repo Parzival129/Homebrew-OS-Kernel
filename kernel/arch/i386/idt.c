@@ -1,11 +1,15 @@
 #include <kernel/idt.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 struct idt_entry idt[NO_IDT_ENTRIES]; // 256 descriptors to fulfill i386 arch.
 struct idt_ptr ip;                    // pointer to idt
 
 extern void idt_init(uint32_t);
+
+char cli_buffer[256];
+uint8_t cli_buffer_index = 0;
 
 // Exception and interrupt handler stubs, based off i386 standards
 // Implemented in isr.s
@@ -184,7 +188,28 @@ void isr_handler(struct interrupt_frame *frame) // handles the interrupt service
 
             char c = ps2_to_ascii(scancode); // convert the ps2 scancode to ascii character
             if (c != 0) {
-                putchar(c); // write the ascii character to the screen
+                if (c == '\n') { // when the user presses enter key
+                    putchar(c); // write the newline to the screen
+                    cli_buffer[cli_buffer_index] = '\0';
+
+                    if (cli_buffer_index == 4 && memcmp(cli_buffer, "help", 4) == 0) {
+                        printf("yo, you called?\n");
+                    }
+
+                    cli_buffer_index = 0;
+                    cli_buffer[0] = '\0';
+                    printf(">");
+                } else if (c == '\b') {
+                    if (cli_buffer_index > 0) {
+                        cli_buffer_index--;
+                        cli_buffer[cli_buffer_index] = '\0';
+                        putchar(c); // update the screen to erase the last character
+                    }
+                } else if (cli_buffer_index < sizeof(cli_buffer) - 1) {
+                    cli_buffer[cli_buffer_index++] = c;
+                    cli_buffer[cli_buffer_index] = '\0';
+                    putchar(c); // write the ascii character to the screen
+                }
             }
         }
 
