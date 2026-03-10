@@ -8,7 +8,7 @@ struct idt_ptr ip;                    // pointer to idt
 
 extern void idt_init(uint32_t);
 
-char cli_buffer[256];
+char cli_buffer[256]; // buffer for cli commands
 uint8_t cli_buffer_index = 0;
 
 // Exception and interrupt handler stubs, based off i386 standards
@@ -192,8 +192,11 @@ void isr_handler(struct interrupt_frame *frame) // handles the interrupt service
                     putchar(c); // write the newline to the screen
                     cli_buffer[cli_buffer_index] = '\0';
 
-                    if (cli_buffer_index == 4 && memcmp(cli_buffer, "help", 4) == 0) {
-                        printf("yo, you called?\n");
+                    // Refactor this into seperate command router
+                    if (cli_buffer_index == 4 && memcmp(cli_buffer, "info", 4) == 0) {
+                        printf("Nue Kernel v0.1\n");
+                    } else if (cli_buffer[0] != '\0') {
+                        printf("command '%s' not recognized\n", cli_buffer);
                     }
 
                     cli_buffer_index = 0;
