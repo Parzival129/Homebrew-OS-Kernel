@@ -4,7 +4,7 @@
 #include <kernel/idt.h>
 #include <kernel/tty.h>
 
-void kernel_main(void)
+void kernel_main(uint32_t multiboot_info_addr) // accepts multiboot info address from boot.S
 {
     terminal_initialize();
     setvbuf(stdout, NULL, _IONBF, 0); // disable stdout buffering so putchar writes immediately

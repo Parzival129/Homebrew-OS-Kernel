@@ -25,7 +25,7 @@ stack_top:
 .type _start, @function
 _start:
 	movl $stack_top, %esp
-
+	push %ebx # pushes the address of the multiboot info structure onto the stack
 	# Call the global constructors.
 	call _init
 
