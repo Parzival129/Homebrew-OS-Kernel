@@ -4,7 +4,10 @@
 
 The project currently boots with GRUB (Multiboot), initializes protected-mode descriptor tables, handles interrupts, and provides a VGA text terminal with PS/2 keyboard input and a tiny built-in command prompt.
 
-## Current State (April 2026)
+## Current State (May 2026 — v0.1)
+
+This release reaches a complete, interactive milestone: the kernel boots, brings
+up protected-mode infrastructure, and runs a usable command prompt.
 
 Implemented and working:
 
@@ -14,17 +17,18 @@ Implemented and working:
 - GDT setup with kernel and user segments (flat 4 GiB model)
 - IDT setup for CPU exceptions (0-31) and remapped PIC IRQs (32-47)
 - Keyboard IRQ handling (PS/2 set 1 scancode -> ASCII translation)
-- Minimal interactive prompt (`>`), with simple `info` and `help` commands
+- Physical memory manager (bitmap allocator over the Multiboot memory map)
+- Interactive prompt (`>`) with built-in commands: `info`, `help`, `clear`, `mem`, `reboot`
 - Freestanding syscall stubs (`write`, `sbrk`, `fstat`, etc.) to support C library/runtime needs
 
-In progress / planned:
+Possible future directions (not implemented in v0.1):
 
 - Paging and virtual memory
-- Physical memory manager
-- More robust heap allocator
+- A full kernel heap allocator (`kmalloc`/`kfree`) over the physical frame allocator
 - Timer/RTC-driven timekeeping and scheduling foundations
+- Preemptive multitasking
+- Ring 3 userspace (TSS) and a real syscall boundary
 - Filesystem support
-- Ring 3 userspace and syscall boundary hardening
 
 ## Architecture Overview
 
@@ -140,6 +144,12 @@ Manual key scripts:
 
 ## Notes on Scope and Maturity
 
-This is still an early-stage kernel focused on foundational bring-up and learning. Core boot/interrupt/terminal paths are in place, but memory management, isolation, scheduling, and userspace execution are not complete yet.
+`nue-kernel` v0.1 is a deliberate milestone: a freestanding i386 kernel taken from
+power-on to an interactive shell. Boot, interrupts, the terminal, and physical
+memory management are all complete and working. Virtual memory, isolation,
+scheduling, and userspace execution are intentionally out of scope for this
+release and are listed above as future directions.
 
-The current design intentionally favors clarity and incremental progress over abstraction-heavy structure, so subsystems are straightforward to inspect and evolve.
+The design favors clarity and incremental progress over abstraction-heavy
+structure, so subsystems are straightforward to inspect and evolve for anyone
+picking the project up later.

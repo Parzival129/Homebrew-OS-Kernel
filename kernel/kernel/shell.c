@@ -49,11 +49,17 @@ static void shell_execute_command(void)
 
 
     } else if (cli_buffer_index == 3 && memcmp(cli_buffer, "mem", 3) == 0) {
-        printf("total frames:  %u\n", pmm_get_total_frame_count());
-        printf("free frames:   %u\n", pmm_get_free_frame_count());
-        printf("total memory:  %u MB\n", pmm_get_total_frame_count() / 256);
-        printf("free memory:   %u MB\n", pmm_get_free_frame_count() / 256);
-        printf("memory usage:  %u%%\n", ((pmm_get_total_frame_count() - pmm_get_free_frame_count()) * 100) / pmm_get_total_frame_count());
+        uint32_t total = pmm_get_total_frame_count();
+        uint32_t free = pmm_get_free_frame_count();
+        if (total == 0) { // guard against divide-by-zero if the memory map reported no usable RAM
+            printf("memory map unavailable\n");
+        } else {
+            printf("total frames:  %lu\n", total);
+            printf("free frames:   %lu\n", free);
+            printf("total memory:  %lu MB\n", total / 256);
+            printf("free memory:   %lu MB\n", free / 256);
+            printf("memory usage:  %lu%%\n", ((total - free) * 100) / total);
+        }
 
         
     } else if (cli_buffer[0] != '\0') {
