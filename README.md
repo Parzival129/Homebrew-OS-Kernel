@@ -4,6 +4,8 @@
 
 The project currently boots with GRUB (Multiboot), initializes protected-mode descriptor tables, handles interrupts, and provides a VGA text terminal with PS/2 keyboard input and a tiny built-in command prompt.
 
+![nue-kernel booted to its interactive prompt](assets/screenshot.png)
+
 ## Current State (May 2026 — v0.1)
 
 This release reaches a complete, interactive milestone: the kernel boots, brings
